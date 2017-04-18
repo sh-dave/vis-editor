@@ -17,6 +17,7 @@
 package com.kotcrab.vis.plugin.spriter.ui;
 
 import com.badlogic.gdx.utils.Array;
+import com.brashmonkey.spriter.Animation;
 import com.brashmonkey.spriter.Entity;
 import com.kotcrab.vis.editor.module.ModuleInjector;
 import com.kotcrab.vis.editor.proxy.EntityProxy;
@@ -66,14 +67,14 @@ public class VisSpriterComponentTable extends AutoComponentTable<SpriterProperti
 		super.updateUIValues();
 
 		ImmutableArray<EntityProxy> proxies = properties.getSelectedEntities();
+
 		if (proxies.size() == 1) {
 			VisSpriter spriter = EntityUtils.getFirstEntity(proxies).getComponent(VisSpriter.class);
 			entitySelectBox.setDisabled(false);
 			animSelectBox.setDisabled(false);
 
 			Entity entity = spriter.getPlayer().getEntity();
-
-			Array<String> animations = new Array<>(entity.animations());
+			Array<String> animations = new Array<String>(entity.animations());
 
 			for (int i = 0; i < entity.animations(); i++) {
 				animations.add(entity.getAnimation(i).name);
@@ -95,14 +96,20 @@ public class VisSpriterComponentTable extends AutoComponentTable<SpriterProperti
 		super.setValuesToEntities();
 
 		ImmutableArray<EntityProxy> proxies = properties.getSelectedEntities();
+		
 		if (proxies.size() == 1) {
 			VisSpriter spriter = EntityUtils.getFirstEntityComponent(proxies, VisSpriter.class);
 			SpriterProperties properties = EntityUtils.getFirstEntityComponent(proxies, SpriterProperties.class);
 			spriter.setEntityName(entitySelectBox.getSelected());
 			properties.entity = spriter.getEntityIndex();  
 			Entity entity = spriter.getPlayer().getEntity();
-			properties.animation = entity.getAnimation(animSelectBox.getSelected()).id;
+			Animation animation = entity.getAnimation(animSelectBox.getSelected());
 
+			if (animation == null) {
+				animation = entity.getAnimation(0);
+			}
+
+			properties.animation = animation.id;
 		}
 
 		EntityUtils.stream(proxies, VisSpriter.class, (proxy, spriterComponent) -> {
